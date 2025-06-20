@@ -4,9 +4,17 @@ provider "aws" {
 
 resource "aws_s3_bucket" "static_site" {
   bucket = "2398060-rugved"  # Replace with your desired S3 bucket name
-  website {
-    index_document = "index.html"
-    error_document = "error.html"
+}
+
+resource "aws_s3_bucket_website_configuration" "static_site" {
+  bucket = aws_s3_bucket.static_site.bucket
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "error.html"
   }
 }
 
@@ -43,12 +51,10 @@ resource "aws_codebuild_project" "static_site_build" {
     compute_type = "BUILD_GENERAL1_SMALL"
     image        = "aws/codebuild/standard:5.0"
     type         = "LINUX_CONTAINER"
-    environment_variables = [
-      {
-        name  = "S3_BUCKET"
-        value = aws_s3_bucket.static_site.bucket
-      }
-    ]
+    environment_variable {
+      name  = "S3_BUCKET"
+      value = aws_s3_bucket.static_site.bucket
+    }
   }
 }
 
@@ -72,7 +78,7 @@ resource "aws_codepipeline" "static_site_pipeline" {
       output_artifacts = ["source_output"]
       configuration = {
         Owner      = "devarugved07012004"       # 🔁 Replace with your GitHub username
-        Repo       = "AWS_USE_CASE"                # 🔁 Replace with your GitHub repo name
+        Repo       = "AWS_USE_CASE"             # 🔁 Replace with your GitHub repo name
         Branch     = "main"
         OAuthToken = "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"    # 🔁 Replace with your GitHub OAuth token
       }
