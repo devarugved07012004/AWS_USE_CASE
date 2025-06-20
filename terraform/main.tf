@@ -1,9 +1,9 @@
 provider "aws" {
-  region = "us-west-2"  # Replace with your desired AWS region
+  region = "eu-north-1"  # Replace with your desired AWS region
 }
 
 resource "aws_s3_bucket" "static_site" {
-  bucket = "my-static-site-bucket"  # Replace with your desired S3 bucket name
+  bucket = "2398060-rugved"  # Replace with your desired S3 bucket name
   website {
     index_document = "index.html"
     error_document = "error.html"
@@ -34,7 +34,7 @@ resource "aws_codebuild_project" "static_site_build" {
   service_role  = aws_iam_role.codebuild_role.arn
   source {
     type      = "GITHUB"
-    location  = "https://github.com/your-username/static-site"  # 🔁 Replace with your GitHub repo URL
+    location  = "https://github.com/devarugved07012004/AWS_USE_CASE.git"  # 🔁 Replace with your GitHub repo URL
   }
   artifacts {
     type = "NO_ARTIFACTS"
@@ -71,10 +71,10 @@ resource "aws_codepipeline" "static_site_pipeline" {
       version          = "1"
       output_artifacts = ["source_output"]
       configuration = {
-        Owner      = "your-github-username"       # 🔁 Replace with your GitHub username
-        Repo       = "static-site"                # 🔁 Replace with your GitHub repo name
+        Owner      = "devarugved07012004"       # 🔁 Replace with your GitHub username
+        Repo       = "AWS_USE_CASE"                # 🔁 Replace with your GitHub repo name
         Branch     = "main"
-        OAuthToken = "your-github-oauth-token"    # 🔁 Replace with your GitHub OAuth token
+        OAuthToken = "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"    # 🔁 Replace with your GitHub OAuth token
       }
     }
   }
