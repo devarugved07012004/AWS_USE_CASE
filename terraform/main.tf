@@ -1,138 +1,57 @@
 provider "aws" {
-  region = "eu-north-1"  # Replace with your desired AWS region
+  region = "eu-north-1" # Or your desired AWS region
 }
 
-resource "aws_s3_bucket" "static_site" {
-  bucket = "2398060-rugved"  # Replace with your desired S3 bucket name
-}
+resource "aws_s3_bucket" "static_website_bucket" {
+  bucket = "rugved-bucket-unique-name" # Replace with a unique bucket name
+  # acl = "public-read" # Keep this commented out or removed as per previous fix
 
-resource "aws_s3_bucket_website_configuration" "static_site" {
-  bucket = aws_s3_bucket.static_site.bucket
-
-  index_document {
-    suffix = "index.html"
+  website {
+    index_document = "index.html"
   }
 
-  error_document {
-    key = "error.html"
+  tags = {
+    Project     = "StaticWebsiteDeployment"
+    Environment = "Production"
   }
 }
 
-resource "aws_iam_role" "codebuild_role" {
-  name = "codebuild-service-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "codebuild.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
+# --- Add this Block Public Access resource ---
+resource "aws_s3_bucket_public_access_block" "static_website_bucket_public_access_block" {
+  bucket = aws_s3_bucket.static_website_bucket.id
+
+  # Set these to false to allow public policies for static website hosting
+  block_public_acls       = false # Not strictly needed for bucket policies, but good to set if you ever considered ACLs
+  block_public_policy     = false
+  ignore_public_acls      = false # Not strictly needed for bucket policies
+  restrict_public_buckets = false
+}
+# --- End of Block Public Access resource ---
+
+
+resource "aws_s3_bucket_policy" "static_website_bucket_policy" {
+  bucket = aws_s3_bucket.static_website_bucket.id
+
+  # Ensure this policy allows GetObject for public read
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "PublicReadGetObject",
+        "Effect": "Allow",
+        "Principal": "*",
+        "Action": "s3:GetObject",
+        "Resource": [
+          "${aws_s3_bucket.static_website_bucket.arn}/*"
+        ]
+      }
+    ]
   })
+
+  # Add a dependency to ensure the public access block is configured first
+  depends_on = [aws_s3_bucket_public_access_block.static_website_bucket_public_access_block]
 }
 
-resource "aws_iam_role_policy_attachment" "codebuild_policy" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
-
-resource "aws_iam_role" "codepipeline_role" {
-  name = "codepipeline-service-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "codepipeline.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_policy" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodePipelineFullAccess"
-}
-
-resource "aws_codebuild_project" "static_site_build" {
-  name          = "StaticSiteBuild"
-  service_role  = aws_iam_role.codebuild_role.arn
-  source {
-    type      = "GITHUB"
-    location  = "https://github.com/devarugved07012004/AWS_USE_CASE.git"  # 🔁 Replace with your GitHub repo URL
-  }
-  artifacts {
-    type = "NO_ARTIFACTS"
-  }
-  environment {
-    compute_type = "BUILD_GENERAL1_SMALL"
-    image        = "aws/codebuild/standard:5.0"
-    type         = "LINUX_CONTAINER"
-    environment_variable {
-      name  = "S3_BUCKET"
-      value = aws_s3_bucket.static_site.bucket
-    }
-  }
-}
-
-resource "aws_codepipeline" "static_site_pipeline" {
-  name     = "StaticSitePipeline"
-  role_arn = aws_iam_role.codepipeline_role.arn
-
-  artifact_store {
-    type     = "S3"
-    location = aws_s3_bucket.static_site.bucket
-  }
-
-  stage {
-    name = "Source"
-    action {
-      name             = "Source"
-      category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "1"
-      output_artifacts = ["source_output"]
-      configuration = {
-        Owner      = "devarugved07012004"       # 🔁 Replace with your GitHub username
-        Repo       = "AWS_USE_CASE"             # 🔁 Replace with your GitHub repo name
-        Branch     = "main"
-        OAuthToken = "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"    # 🔁 Replace with your GitHub OAuth token
-      }
-    }
-  }
-
-  stage {
-    name = "Build"
-    action {
-      name             = "Build"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
-      output_artifacts = ["build_output"]
-      version          = "1"
-      configuration = {
-        ProjectName = aws_codebuild_project.static_site_build.name
-      }
-    }
-  }
-
-  stage {
-    name = "Deploy"
-    action {
-      name            = "Deploy"
-      category        = "Deploy"
-      owner           = "AWS"
-      provider        = "S3"
-      input_artifacts = ["build_output"]
-      version         = "1"
-      configuration = {
-        BucketName = aws_s3_bucket.static_site.bucket
-        Extract    = "true"
-      }
-    }
-  }
+output "website_endpoint" {
+  value = aws_s3_bucket.static_website_bucket.website_endpoint
 }
