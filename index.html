@@ -6,17 +6,57 @@
     <title>A Digital Canvas</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
+        /* Define CSS Variables for Theming */
         :root {
-            --primary-color: #2c3e50; /* Dark Blue-Gray */
-            --secondary-color: #34495e; /* Slightly lighter Dark Blue-Gray */
-            --accent-color: #3f6080; /* A rich blue for highlights */
-            --text-light: #ecf0f1; /* Light text for dark backgrounds */
-            --text-dark: #333; /* Dark text for light backgrounds */
-            --bg-light: #f4f7f6; /* Light gray background */
-            --bg-white: #ffffff;
-            --border-color: #e0e0e0;
-            --shadow-light: 0 2px 5px rgba(0,0,0,0.08);
-            --shadow-medium: 0 4px 15px rgba(0,0,0,0.12);
+            /* Light Mode Colors */
+            --primary-color-light: #2c3e50; /* Dark Blue-Gray for headers/footers */
+            --secondary-color-light: #34495e; /* Slightly lighter Dark Blue-Gray */
+            --accent-color-light: #3f6080; /* A rich blue for highlights */
+            --text-dark-light: #333; /* Dark text for light backgrounds */
+            --bg-light-light: #f4f7f6; /* Light gray background */
+            --bg-white-light: #ffffff;
+            --border-color-light: #e0e0e0;
+            --shadow-light-light: 0 2px 5px rgba(0,0,0,0.08);
+            --shadow-medium-light: 0 4px 15px rgba(0,0,0,0.12);
+            --card-bg-light: #f9f9f9; /* Card background in light mode */
+
+            /* Dark Mode Colors (Default, will be overridden by .dark-mode) */
+            --primary-color-dark: #1a1a2e; /* Very dark blue */
+            --secondary-color-dark: #0f3460; /* Darker blue */
+            --accent-color-dark: #e94560; /* Vibrant red/pink for accents */
+            --text-light-dark: #e0e0e0; /* Light text for dark backgrounds */
+            --bg-dark-dark: #001f3f; /* Deep blue background */
+            --bg-card-dark: #0a1128; /* Even darker blue for cards */
+            --border-color-dark: #2a3a5a;
+            --shadow-light-dark: 0 2px 5px rgba(0,0,0,0.3);
+            --shadow-medium-dark: 0 4px 15px rgba(0,0,0,0.4);
+
+            /* Active Colors - These will switch based on mode */
+            --primary-color: var(--primary-color-light);
+            --secondary-color: var(--secondary-color-light);
+            --accent-color: var(--accent-color-light);
+            --text-light: #ecf0f1; /* Stays light for header/footer */
+            --text-main: var(--text-dark-light);
+            --bg-main: var(--bg-light-light);
+            --bg-surface: var(--bg-white-light);
+            --border-color: var(--border-color-light);
+            --shadow-light: var(--shadow-light-light);
+            --shadow-medium: var(--shadow-medium-light);
+            --card-bg: var(--card-bg-light);
+        }
+
+        /* Dark Mode Specific Styles */
+        body.dark-mode {
+            --primary-color: var(--primary-color-dark);
+            --secondary-color: var(--secondary-color-dark);
+            --accent-color: var(--accent-color-dark);
+            --text-main: var(--text-light-dark);
+            --bg-main: var(--bg-dark-dark);
+            --bg-surface: var(--bg-card-dark);
+            --border-color: var(--border-color-dark);
+            --shadow-light: var(--shadow-light-dark);
+            --shadow-medium: var(--shadow-medium-dark);
+            --card-bg: var(--secondary-color-dark); /* Using secondary dark for cards */
         }
 
         /* Base Styles */
@@ -24,13 +64,14 @@
             font-family: 'Montserrat', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
+            background-color: var(--bg-main);
+            color: var(--text-main);
             line-height: 1.6;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease; /* Smooth transition */
         }
 
         /* Header */
@@ -42,7 +83,8 @@
             box-shadow: var(--shadow-medium);
             position: relative;
             z-index: 10;
-            overflow: hidden; /* For pseudo-element effects */
+            overflow: hidden;
+            transition: background-color 0.4s ease;
         }
 
         header h1 {
@@ -64,7 +106,6 @@
             animation: fadeInSlideUp 1s 0.3s forwards cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* Subtle background pattern in header */
         header::before {
             content: '';
             position: absolute;
@@ -78,13 +119,80 @@
             animation: movePattern 20s linear infinite;
         }
 
+        /* Mode Toggle Button */
+        .mode-toggle-container {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            z-index: 20;
+        }
+
+        .mode-toggle {
+            background: var(--bg-surface);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            width: 60px;
+            height: 30px;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 3px;
+        }
+
+        .mode-toggle::before {
+            content: '☀️'; /* Sun icon for light mode */
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: opacity 0.3s ease;
+            opacity: 1;
+        }
+
+        .mode-toggle::after {
+            content: '🌙'; /* Moon icon for dark mode */
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: opacity 0.3s ease;
+            opacity: 0; /* Hidden by default */
+        }
+
+        .mode-toggle .slider {
+            background-color: var(--accent-color);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            position: absolute;
+            left: 3px;
+            transition: transform 0.4s ease, background-color 0.4s ease;
+        }
+
+        body.dark-mode .mode-toggle::before {
+            opacity: 0; /* Hide sun in dark mode */
+        }
+
+        body.dark-mode .mode-toggle::after {
+            opacity: 1; /* Show moon in dark mode */
+        }
+
+        body.dark-mode .mode-toggle .slider {
+            transform: translateX(30px); /* Move slider to the right */
+            background-color: var(--accent-color-dark); /* Change slider color in dark mode */
+        }
+
         /* Main Content Area */
         main {
             flex-grow: 1;
             max-width: 1000px;
             margin: 4rem auto;
             padding: 3rem;
-            background-color: var(--bg-white);
+            background-color: var(--bg-surface);
             border-radius: 10px;
             box-shadow: var(--shadow-medium);
             display: flex;
@@ -95,11 +203,13 @@
             opacity: 0;
             transform: translateY(30px);
             animation: fadeInSlideUp 1s 0.6s forwards cubic-bezier(0.23, 1, 0.32, 1);
+            transition: background-color 0.4s ease, box-shadow 0.4s ease;
         }
 
         section {
             padding-bottom: 2rem;
             border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.4s ease;
         }
 
         section:last-of-type {
@@ -114,6 +224,7 @@
             text-align: center;
             position: relative;
             padding-bottom: 0.8rem;
+            transition: color 0.4s ease;
         }
 
         section h2::after {
@@ -126,6 +237,7 @@
             height: 4px;
             background-color: var(--accent-color);
             border-radius: 2px;
+            transition: background-color 0.4s ease;
         }
 
         .feature-grid {
@@ -136,25 +248,33 @@
         }
 
         .feature-card {
-            background-color: var(--bg-light);
+            background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 2rem;
             box-shadow: var(--shadow-light);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
             text-align: center;
+            color: var(--text-main); /* Ensure card text adapts */
         }
 
         .feature-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            background-color: var(--bg-white);
+            box-shadow: var(--shadow-medium); /* Use a common shadow var */
         }
+        body.dark-mode .feature-card:hover {
+            background-color: var(--primary-color-dark); /* Darker hover for dark mode */
+        }
+        body:not(.dark-mode) .feature-card:hover {
+            background-color: var(--bg-white-light); /* Lighter hover for light mode */
+        }
+
 
         .feature-card .icon {
             font-size: 3.5em;
             color: var(--accent-color);
             margin-bottom: 1rem;
+            transition: color 0.4s ease;
         }
 
         .feature-card h3 {
@@ -162,29 +282,32 @@
             font-size: 1.6em;
             margin-top: 0;
             margin-bottom: 0.8rem;
+            transition: color 0.4s ease;
         }
 
         .feature-card p {
             font-size: 1em;
-            color: #555;
+            color: inherit; /* Inherit text color from card */
             margin-bottom: 0;
         }
 
         .closing-statement {
             text-align: center;
             font-size: 1.2em;
-            color: var(--text-dark);
+            color: var(--text-main);
             max-width: 700px;
             margin: 0 auto;
             padding: 1rem 0;
             border-top: 1px dashed var(--border-color);
             margin-top: 3rem;
             padding-top: 3rem;
+            transition: color 0.4s ease, border-color 0.4s ease;
         }
 
         .closing-statement strong {
             color: var(--primary-color);
             font-weight: 700;
+            transition: color 0.4s ease;
         }
 
         /* Footer */
@@ -198,6 +321,7 @@
             box-shadow: 0 -2px 5px rgba(0,0,0,0.08);
             position: relative;
             z-index: 10;
+            transition: background-color 0.4s ease;
         }
 
         /* Keyframe Animations */
@@ -217,7 +341,6 @@
             100% { background-position: 20px 20px; }
         }
 
-
         /* Responsive Design */
         @media (max-width: 768px) {
             header h1 {
@@ -225,6 +348,10 @@
             }
             header p {
                 font-size: 1.1em;
+            }
+            .mode-toggle-container {
+                top: 1rem;
+                right: 1rem;
             }
             main {
                 margin: 2rem auto;
@@ -267,6 +394,12 @@
     </style>
 </head>
 <body>
+    <div class="mode-toggle-container">
+        <div class="mode-toggle" id="modeToggle">
+            <div class="slider"></div>
+        </div>
+    </div>
+
     <header>
         <h1>The Art of Interaction</h1>
         <p>Crafting Seamless Experiences, Engineered with Precision</p>
@@ -277,19 +410,23 @@
             <h2>Design Principles in Action</h2>
             <div class="feature-grid">
                 <div class="feature-card">
-                    <div class="icon">&#9881;</div> <h3>Optimized Performance</h3>
+                    <div class="icon">&#9881;</div>
+                    <h3>Optimized Performance</h3>
                     <p>Every line of code crafted for efficiency, ensuring rapid load times and smooth user interactions across all devices.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon">&#9728;</div> <h3>Intuitive User Experience</h3>
+                    <div class="icon">&#9728;</div>
+                    <h3>Intuitive User Experience</h3>
                     <p>Thoughtful layouts and clear navigation designed to guide users effortlessly, minimizing friction and maximizing engagement.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon">&#128187;</div> <h3>Adaptive Responsiveness</h3>
+                    <div class="icon">&#128187;</div>
+                    <h3>Adaptive Responsiveness</h3>
                     <p>A fluid design approach that guarantees a consistent and beautiful presentation, regardless of screen size or orientation.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon">&#128269;</div> <h3>Structured Readability</h3>
+                    <div class="icon">&#128269;</div>
+                    <h3>Structured Readability</h3>
                     <p>Clean, semantic HTML and well-organized CSS lead to easily maintainable and scalable front-end architecture.</p>
                 </div>
             </div>
@@ -299,19 +436,23 @@
             <h2>Underlying Craftsmanship</h2>
             <div class="feature-grid">
                 <div class="feature-card">
-                    <div class="icon">&#128187;</div> <h3>Semantic Markup</h3>
+                    <div class="icon">&#128187;</div>
+                    <h3>Semantic Markup</h3>
                     <p>Utilizing modern HTML5 elements to structure content logically, improving accessibility and SEO.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon">&#127912;</div> <h3>Aesthetic Cohesion</h3>
+                    <div class="icon">&#127912;</div>
+                    <h3>Aesthetic Cohesion</h3>
                     <p>Harmonious color palettes, purposeful typography, and balanced spacing create a visually appealing and professional interface.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon">&#128274;</div> <h3>Accessibility Focus</h3>
+                    <div class="icon">&#128274;</div>
+                    <h3>Accessibility Focus</h3>
                     <p>Considering all users by implementing best practices for contrast, navigation, and assistive technologies.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon">&#128295;</div> <h3>Maintainable Codebase</h3>
+                    <div class="icon">&#128295;</div>
+                    <h3>Maintainable Codebase</h3>
                     <p>Modular CSS and clear naming conventions ensure the code is easy to understand, debug, and extend.</p>
                 </div>
             </div>
@@ -323,5 +464,29 @@
     <footer>
         <p>Crafted with diligence and an eye for detail.</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modeToggle = document.getElementById('modeToggle');
+            const body = document.body;
+
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+            }
+
+            modeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+
+                // Save theme preference
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
