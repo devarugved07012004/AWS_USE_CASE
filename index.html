@@ -1,486 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Art of Digital Creation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        /* Define CSS Variables for Theming */
-        :root {
-            /* Light Mode Colors */
-            --primary-color-light: #2c3e50; /* Deep Slate Blue */
-            --secondary-color-light: #34495e; /* Muted Navy */
-            --accent-color-light: #3f6080; /* Steel Blue */
-            --text-dark-light: #333; /* Soft Black */
-            --bg-light-light: #f8f9fa; /* Off-White Background */
-            --bg-white-light: #ffffff; /* Pure White Surface */
-            --border-color-light: #e9ecef; /* Light Gray Border */
-            --shadow-light-light: 0 2px 5px rgba(0,0,0,0.08);
-            --shadow-medium-light: 0 4px 15px rgba(0,0,0,0.12);
-            --card-bg-light: #f9f9f9; /* Light Gray Card Background */
-
-            /* Dark Mode Colors */
-            --primary-color-dark: #1a1a2e; /* Midnight Blue */
-            --secondary-color-dark: #0f3460; /* Dark Ocean Blue */
-            --accent-color-dark: #e94560; /* Fiery Rose (Vibrant Accent) */
-            --text-light-dark: #e0e0e0; /* Off-White Text */
-            --bg-dark-dark: #001f3f; /* Deepest Blue Background */
-            --bg-card-dark: #0a1128; /* Very Dark Blue for Cards */
-            --border-color-dark: #2a3a5a; /* Muted Blue Border */
-            --shadow-light-dark: 0 2px 5px rgba(0,0,0,0.3);
-            --shadow-medium-dark: 0 4px 15px rgba(0,0,0,0.4);
-
-            /* Active Colors - These will switch based on mode */
-            --primary-color: var(--primary-color-light);
-            --secondary-color: var(--secondary-color-light);
-            --accent-color: var(--accent-color-light);
-            --text-light: #ecf0f1; /* Stays light for header/footer (common) */
-            --text-main: var(--text-dark-light);
-            --bg-main: var(--bg-light-light);
-            --bg-surface: var(--bg-white-light);
-            --border-color: var(--border-color-light);
-            --shadow-light: var(--shadow-light-light);
-            --shadow-medium: var(--shadow-medium-light);
-            --card-bg: var(--card-bg-light);
-        }
-
-        /* Dark Mode Specific Styles - Applied when body has .dark-mode class */
-        body.dark-mode {
-            --primary-color: var(--primary-color-dark);
-            --secondary-color: var(--secondary-color-dark);
-            --accent-color: var(--accent-color-dark);
-            --text-main: var(--text-light-dark);
-            --bg-main: var(--bg-dark-dark);
-            --bg-surface: var(--bg-card-dark);
-            --border-color: var(--border-color-dark);
-            --shadow-light: var(--shadow-light-dark);
-            --shadow-medium: var(--shadow-medium-dark);
-            --card-bg: var(--secondary-color-dark);
-        }
-
-        /* Base Styles */
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background-color 0.4s ease, color 0.4s ease; /* Smooth mode transition */
-        }
-
-        /* Header */
-        header {
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            padding: 2.5rem 0;
-            text-align: center;
-            box-shadow: var(--shadow-medium);
-            position: relative;
-            z-index: 10;
-            overflow: hidden;
-            transition: background-color 0.4s ease;
-        }
-
-        header h1 {
-            font-family: 'Playfair Display', serif;
-            margin: 0;
-            font-size: 3.5em;
-            letter-spacing: 2px;
-            position: relative;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInSlideUp 1s forwards cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        header p {
-            font-size: 1.3em;
-            margin-top: 0.8rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInSlideUp 1s 0.3s forwards cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        /* Subtle background pattern in header */
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05) 100%);
-            background-size: 20px 20px;
-            opacity: 0.1;
-            animation: movePattern 20s linear infinite;
-        }
-
-        /* Mode Toggle Button */
-        .mode-toggle-container {
-            position: absolute;
-            top: 1.5rem;
-            right: 2rem;
-            z-index: 20;
-        }
-
-        .mode-toggle {
-            background: var(--bg-surface);
-            border: 2px solid var(--border-color);
-            border-radius: 20px;
-            width: 60px;
-            height: 30px;
-            cursor: pointer;
-            position: relative;
-            transition: background-color 0.4s ease, border-color 0.4s ease;
-            display: flex;
-            align-items: center;
-            padding: 0 3px;
-        }
-
-        .mode-toggle::before {
-            content: '☀️'; /* Sun icon for light mode */
-            position: absolute;
-            left: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2em;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-        }
-
-        .mode-toggle::after {
-            content: '🌙'; /* Moon icon for dark mode */
-            position: absolute;
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2em;
-            transition: opacity 0.3s ease;
-            opacity: 0; /* Hidden by default */
-        }
-
-        .mode-toggle .slider {
-            background-color: var(--accent-color);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            position: absolute;
-            left: 3px;
-            transition: transform 0.4s ease, background-color 0.4s ease;
-        }
-
-        /* Styles when in dark mode */
-        body.dark-mode .mode-toggle::before {
-            opacity: 0; /* Hide sun in dark mode */
-        }
-
-        body.dark-mode .mode-toggle::after {
-            opacity: 1; /* Show moon in dark mode */
-        }
-
-        body.dark-mode .mode-toggle .slider {
-            transform: translateX(30px); /* Move slider to the right */
-            background-color: var(--accent-color); /* Uses current accent color (dark or light) */
-        }
-
-        /* Main Content Area */
-        main {
-            flex-grow: 1;
-            max-width: 1000px;
-            margin: 4rem auto;
-            padding: 3rem;
-            background-color: var(--bg-surface);
-            border-radius: 10px;
-            box-shadow: var(--shadow-medium);
-            display: flex;
-            flex-direction: column;
-            gap: 3.5rem;
-            position: relative;
-            z-index: 5;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInSlideUp 1s 0.6s forwards cubic-bezier(0.23, 1, 0.32, 1);
-            transition: background-color 0.4s ease, box-shadow 0.4s ease;
-        }
-
-        section {
-            padding-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-            transition: border-color 0.4s ease;
-        }
-
-        section:last-of-type {
-            border-bottom: none;
-        }
-
-        section h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--primary-color);
-            font-size: 2.5em;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            position: relative;
-            padding-bottom: 0.8rem;
-            transition: color 0.4s ease;
-        }
-
-        section h2::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background-color: var(--accent-color);
-            border-radius: 2px;
-            transition: background-color 0.4s ease;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-            margin-top: 2rem;
-        }
-
-        .feature-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: var(--shadow-light);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
-            text-align: center;
-            color: var(--text-main);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-medium);
-        }
-        body.dark-mode .feature-card:hover {
-            background-color: var(--primary-color-dark); /* Darker hover for dark mode */
-        }
-        body:not(.dark-mode) .feature-card:hover {
-            background-color: var(--bg-white-light); /* Lighter hover for light mode */
-        }
-
-        .feature-card .icon {
-            font-size: 3.5em;
-            color: var(--accent-color);
-            margin-bottom: 1rem;
-            transition: color 0.4s ease;
-        }
-
-        .feature-card h3 {
-            color: var(--secondary-color);
-            font-size: 1.6em;
-            margin-top: 0;
-            margin-bottom: 0.8rem;
-            transition: color 0.4s ease;
-        }
-
-        .feature-card p {
-            font-size: 1em;
-            color: inherit;
-            margin-bottom: 0;
-        }
-
-        .closing-statement {
-            text-align: center;
-            font-size: 1.2em;
-            color: var(--text-main);
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 1rem 0;
-            border-top: 1px dashed var(--border-color);
-            margin-top: 3rem;
-            padding-top: 3rem;
-            transition: color 0.4s ease, border-color 0.4s ease;
-        }
-
-        .closing-statement strong {
-            color: var(--primary-color);
-            font-weight: 700;
-            transition: color 0.4s ease;
-        }
-
-        /* Footer */
-        footer {
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            text-align: center;
-            padding: 1.8rem 0;
-            font-size: 0.9em;
-            margin-top: auto;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.08);
-            position: relative;
-            z-index: 10;
-            transition: background-color 0.4s ease;
-        }
-
-        /* Keyframe Animations */
-        @keyframes fadeInSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes movePattern {
-            0% { background-position: 0 0; }
-            100% { background-position: 20px 20px; }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2.8em;
-            }
-            header p {
-                font-size: 1.1em;
-            }
-            .mode-toggle-container {
-                top: 1rem;
-                right: 1rem;
-            }
-            main {
-                margin: 2rem auto;
-                padding: 2rem;
-            }
-            section h2 {
-                font-size: 2em;
-            }
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-            .feature-card {
-                padding: 1.5rem;
-            }
-            .feature-card .icon {
-                font-size: 3em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 2.2em;
-            }
-            header p {
-                font-size: 1em;
-            }
-            main {
-                padding: 1.5rem;
-            }
-            section h2 {
-                font-size: 1.8em;
-            }
-            .feature-card h3 {
-                font-size: 1.4em;
-            }
-            .closing-statement {
-                font-size: 1.05em;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Terraform Script - Bluish Theme</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 20px;
+    }
+    pre {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    .keyword { color: #60a5fa; font-weight: bold; }
+    .string { color: #38bdf8; }
+    .property { color: #93c5fd; }
+    .comment { color: #64748b; font-style: italic; }
+  </style>
 </head>
 <body>
-    <div class="mode-toggle-container">
-        <div class="mode-toggle" id="modeToggle">
-            <div class="slider"></div>
-        </div>
-    </div>
+  <h2>Terraform Script - Static Website Deployment</h2>
+  <pre>
+<span class="keyword">provider</span> <span class="string">"aws"</span> {
+  <span class="property">region</span> = <span class="string">"us-east-2"</span>
+}
 
-    <header>
-        <h1>Crafting the Digital Horizon 123</h1>
-        <p>Where Innovation Meets Impeccable Execution</p>
-    </header>
+<span class="keyword">resource</span> <span class="string">"aws_s3_bucket"</span> <span class="string">"static_website_bucket"</span> {
+  <span class="property">bucket</span> = <span class="string">"bucket-praneeth-static"</span>
 
-    <main>
-        <section>
-            <h2>Core Pillars of Excellence</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="icon">&#128172;</div> <h3>User-Centric Design</h3>
-                    <p>Building intuitive and engaging interfaces that prioritize seamless human-computer interaction and delight users.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">&#128293;</div> <h3>Optimized Performance</h3>
-                    <p>Engineering for speed and efficiency, ensuring rapid load times and fluid responsiveness across diverse environments.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">&#127760;</div> <h3>Adaptability & Resilience</h3>
-                    <p>Developing robust, scalable solutions designed to perform flawlessly across devices and adapt to future demands.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">&#128270;</div> <h3>Security & Data Integrity</h3>
-                    <p>Implementing stringent security protocols and best practices to protect sensitive information and maintain system reliability.</p>
-                </div>
-            </div>
-        </section>
+  <span class="keyword">website</span> {
+    <span class="property">index_document</span> = <span class="string">"index.html"</span>
+  }
 
-        <section>
-            <h2>The Art of the Codebase</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="icon">&#128269;</div> <h3>Precision & Readability</h3>
-                    <p>Crafting clean, well-documented, and semantic code that fosters collaboration and simplifies maintenance.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">&#127912;</div> <h3>Aesthetic & Visual Harmony</h3>
-                    <p>Applying principles of visual design to create balanced, cohesive, and aesthetically pleasing user experiences.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">&#128161;</div> <h3>Innovative Problem-Solving</h3>
-                    <p>Approaching complex challenges with a creative mindset, delivering elegant and efficient solutions.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">&#128200;</div> <h3>Continuous Growth & Learning</h3>
-                    <p>A commitment to staying current with emerging technologies and evolving best practices in the digital landscape.</p>
-                </div>
-            </div>
-        </section>
+  <span class="property">tags</span> = {
+    <span class="property">Project</span>     = <span class="string">"StaticWebsiteDeployment"</span>
+    <span class="property">Environment</span> = <span class="string">"Production"</span>
+  }
+}
 
-        <p class="closing-statement">This digital canvas is a demonstration of an **unwavering dedication to the highest standards of web development**.</p>
-    </main>
+<span class="keyword">resource</span> <span class="string">"aws_s3_bucket_public_access_block"</span> <span class="string">"static_website_bucket_public_access_block"</span> {
+  <span class="property">bucket</span> = <span class="string">aws_s3_bucket.static_website_bucket.id</span>
 
-    <footer>
-        <p>Engineered with foresight and a passion for the digital frontier.</p>
-    </footer>
+  <span class="property">block_public_acls</span>       = <span class="string">false</span>
+  <span class="property">block_public_policy</span>     = <span class="string">false</span>
+  <span class="property">ignore_public_acls</span>      = <span class="string">false</span>
+  <span class="property">restrict_public_buckets</span> = <span class="string">false</span>
+}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modeToggle = document.getElementById('modeToggle');
-            const body = document.body;
+<span class="keyword">resource</span> <span class="string">"aws_s3_bucket_policy"</span> <span class="string">"static_website_bucket_policy"</span> {
+  <span class="property">bucket</span> = <span class="string">aws_s3_bucket.static_website_bucket.id</span>
 
-            // Check for saved theme preference in local storage
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                body.classList.add('dark-mode');
-            }
+  <span class="property">policy</span> = <span class="keyword">jsonencode</span>({
+    <span class="string">"Version"</span>: <span class="string">"2012-10-17"</span>,
+    <span class="string">"Statement"</span>: [
+      {
+        <span class="string">"Sid"</span>: <span class="string">"PublicReadGetObject"</span>,
+        <span class="string">"Effect"</span>: <span class="string">"Allow"</span>,
+        <span class="string">"Principal"</span>: <span class="string">"*"</span>,
+        <span class="string">"Action"</span>: <span class="string">"s3:GetObject"</span>,
+        <span class="string">"Resource"</span>: [
+          <span class="string">"${aws_s3_bucket.static_website_bucket.arn}/*"</span>
+        ]
+      }
+    ]
+  })
 
-            // Event listener for the toggle button
-            modeToggle.addEventListener('click', () => {
-                body.classList.toggle('dark-mode');
+  <span class="property">depends_on</span> = [<span class="string">aws_s3_bucket_public_access_block.static_website_bucket_public_access_block</span>]
+}
 
-                // Save current theme preference
-                if (body.classList.contains('dark-mode')) {
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    localStorage.setItem('theme', 'light');
-                }
-            });
-        });
-    </script>
+<span class="keyword">output</span> <span class="string">"website_endpoint"</span> {
+  <span class="property">value</span> = <span class="string">aws_s3_bucket.static_website_bucket.website_endpoint</span>
+}
+  </pre>
 </body>
 </html>
